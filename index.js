@@ -45,7 +45,8 @@ async function downloadImage(url, filename) {
   });
 
   // Join folder path and file name
-  fs.writeFile(folderPath + '\\' + filename, downloadResponse.data, (err) => {
+  // Won't work on UNIX machines because it's a Windows path
+  fs.writeFile(folderPath + '/' + filename, downloadResponse.data, (err) => {
     if (err) throw err;
     console.log('Image downloaded successfully!');
   });
