@@ -4,7 +4,7 @@ import axios from 'axios';
 import extractUrls from 'extract-urls';
 import { parse } from 'node-html-parser';
 
-const websiteUrl = 'https://memegen-link-examples-upleveled.netlify.app/';
+const websiteURL = 'https://memegen-link-examples-upleveled.netlify.app/';
 
 // Save current working directory path
 const cwd = process.cwd();
@@ -23,7 +23,7 @@ try {
 }
 
 // Fetch website
-const response = await fetch(websiteUrl);
+const response = await fetch(websiteURL);
 
 // Transform HTTP response to text
 const data = await response.text();
