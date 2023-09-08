@@ -4,17 +4,14 @@ import axios from 'axios';
 import extractUrls from 'extract-urls';
 import { parse } from 'node-html-parser';
 
-/* `browserless` will be passed to `html-get`
- * as driver for getting the rendered HTML. */
-
 const websiteUrl = 'https://memegen-link-examples-upleveled.netlify.app/';
 
-// Print current working directory
+// Save current working directory path
 const cwd = process.cwd();
 
-// Set folder path
+// Set folder path by joining current working directory and memes
 const folderPath = path.join(cwd, 'memes');
-console.log(folderPath);
+console.log(`Your images will be saved to: ${folderPath}`);
 
 // Create folder
 try {
@@ -25,52 +22,55 @@ try {
   console.error(err);
 }
 
-// fetch request
+// Fetch website
 const response = await fetch(websiteUrl);
-// response to text request
+
+// Transform HTTP response to text
 const data = await response.text();
-// print data from fetch
-// console.log('Data from fetch with promise' + data);
 
-const root = parse(data);
-// console.log(root.querySelectorAll('img').toString().getAttribute('img'));
-
-const parsedImageElements = root
+// Parse HTML full HTML to <img> elements only
+const root = parse(data)
   .querySelectorAll('img[src^="https://api.memegen.link/"]')
   .toString();
-// console.log(parsedImageElements);
 
-const filteredImageUrls = extractUrls(parsedImageElements);
-// check if list URLs are okay
-// console.log(filteredImageUrls);
-// check that you can get the first element of the array
-// console.log(filteredImageUrls[0]);
+// Extract urls from <img> element list
+const filteredImageUrls = extractUrls(root);
 
-// declare function to download images
+// Declare function to download images
 async function downloadImage(url, filename) {
   const downloadResponse = await axios.get(url, {
-    // The response is a JavaScript ArrayBuffer containing binary data. (https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
+    // The response is a JavaScript ArrayBuffer containing binary data.
+    // (https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseType)
     responseType: 'arraybuffer',
   });
 
-  // since writeFile won't take a path as parameter I joined it to the filename lol
+  // Join folder path and file name
   fs.writeFile(folderPath + '\\' + filename, downloadResponse.data, (err) => {
     if (err) throw err;
     console.log('Image downloaded successfully!');
   });
 }
+// Set number format to 2 digits minimum, essentially leading zeros for single digit numbers (0 -> 00, 1 -> 01, etc.)
 const numberFormat = new Intl.NumberFormat('en-US', {
   minimumIntegerDigits: 2,
 });
 
-// download 10 images
-for (let imagesDownloaded = 1; imagesDownloaded <= 11; imagesDownloaded++) {
+// Set amount of images to download
+const imageAmountToDownload = 10;
+
+// Download images
+for (
+  let imagesDownloaded = 1;
+  imagesDownloaded <= imageAmountToDownload;
+  imagesDownloaded++
+) {
   await downloadImage(
     filteredImageUrls[imagesDownloaded],
-    // set numberFormat to minimumIntegerDigits: 2 for leading zero
     numberFormat.format(imagesDownloaded) + '.jpg',
   );
 }
+
+// ----- Misc comments
 // downloadImage('https://example.com/image.jpg', 'image.jpg');
 
 // Things that didn't work
@@ -80,3 +80,14 @@ for (let imagesDownloaded = 1; imagesDownloaded <= 11; imagesDownloaded++) {
 
 // get value of all src attributes parsed img list
 // console.log(parse(parsedImages).toString().getAttribute('src'));
+
+// check if list URLs are okay
+// console.log(filteredImageUrls);
+// check that you can get the first element of the array
+// console.log(filteredImageUrls[0]);
+
+// Check fetched data
+// console.log('Data from fetch with promise' + data);
+
+// Check image elements only
+// console.log(parsedImageElements);
